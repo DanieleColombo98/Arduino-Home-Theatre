@@ -6,6 +6,7 @@
 #define FAN_PWM 5     // Pin per velocità della ventola
 #define FAN_DIR1 4    // Pin direzione 1
 #define FAN_DIR2 3    // Pin direzione 2
+bool ventolaAccesa = false;
 
 DHT dht(DHTPIN, DHTTYPE);  // Inizializza DHT
 
@@ -46,15 +47,17 @@ void loop() {
     Serial.println(" °C");
 
     // Controllo della ventola
-    if (temperature > 24 || humidity > 50) {
-        Serial.println("Ventola ACCESA");
+    if (!ventolaAccesa && (temperature > 24 || humidity > 50)) {
         digitalWrite(FAN_DIR1, HIGH);
         digitalWrite(FAN_DIR2, LOW);
         analogWrite(FAN_PWM, 255);
-    } else {
-        Serial.println("Ventola SPENTA");
+        Serial.println("Ventola ACCESA");
+        ventolaAccesa = true;
+    } else if (ventolaAccesa && (temperature <= 23 && humidity <= 46)) {
         digitalWrite(FAN_DIR1, LOW);
         digitalWrite(FAN_DIR2, LOW);
         analogWrite(FAN_PWM, 0);
+        Serial.println("Ventola SPENTA");
+        ventolaAccesa = false;
     }
 }
