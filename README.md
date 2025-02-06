@@ -5,3 +5,7 @@ Il progetto prevede la realizzazione di un sistema automatizzato per una sala ho
 Di default, il sistema opera in modalità automatica in base ai dati rilevati dai sensori. Tuttavia, tramite telecomando e ricevitore IR, è possibile disattivare la modalità automatica e regolare manualmente la ventola e la tenda.
 
 In questo modo, il sistema garantisce un’esperienza ottimale, adattandosi sia automaticamente alle condizioni della stanza sia permettendo un controllo personalizzato.
+
+## Librerie utilizzate:
+- DHT sensor library
+- Adafruit Unified Sensor (necessaria per DHT sensor library)
