@@ -8,6 +8,8 @@
 #define FAN_DIR2 3    // Pin direzione 2
 bool ventolaAccesa = false;
 
+#define PHOTO_PIN A0  // Pin fotocellula
+
 DHT dht(DHTPIN, DHTTYPE);  // Inizializza DHT
 
 void setup() {
@@ -19,6 +21,9 @@ void setup() {
     pinMode(FAN_PWM, OUTPUT);
     pinMode(FAN_DIR1, OUTPUT);
     pinMode(FAN_DIR2, OUTPUT);
+
+    // Configurazione pin fotocellula
+    pinMode(PHOTO_PIN, INPUT);
     
     // Spegne la ventola all'avvio
     digitalWrite(FAN_DIR1, LOW);
@@ -29,9 +34,10 @@ void setup() {
 void loop() {
     delay(2000);
 
-    // Lettura umidità e temperatura
+    // Lettura valori sensori
     float humidity = dht.readHumidity();
-    float temperature = dht.readTemperature(); 
+    float temperature = dht.readTemperature();
+    int light = analogRead(PHOTO_PIN); 
 
     if (isnan(humidity) || isnan(temperature)) { // Controllo se la lettura è valida
         Serial.println("Errore nella lettura del DHT11!");
@@ -45,6 +51,9 @@ void loop() {
     Serial.print("Temperatura: ");
     Serial.print(temperature);
     Serial.println(" °C");
+
+    Serial.print("Luce: ");
+    Serial.println(light);
 
     // Controllo della ventola
     if (!ventolaAccesa && (temperature > 24 || humidity > 50)) {
