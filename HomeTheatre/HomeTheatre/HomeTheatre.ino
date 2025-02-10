@@ -14,7 +14,7 @@ bool ventolaAccesa = false;
 // Definizione motore passo-passo
 #define STEPS_PER_REV 2048   // Passi per un giro completo del motore
 
-Stepper motore(STEPS_PER_REV, 11, 10, 9, 8); // Inizializza motore con ULN2003
+Stepper motore(STEPS_PER_REV, 11, 9, 10, 8); // Inizializza motore con ULN2003
 DHT dht(DHTPIN, DHTTYPE);  // Inizializza DHT
 
 void setup() {
@@ -48,7 +48,7 @@ void loop() {
 
     if (isnan(humidity) || isnan(temperature)) { // Controllo se la lettura è valida
         Serial.println("Errore nella lettura del DHT11!");
-        return;
+        //return;
     }
 
     Serial.print("Umidità: ");
