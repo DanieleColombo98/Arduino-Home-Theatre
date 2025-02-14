@@ -10,9 +10,12 @@
 #define FAN_DIR2 3    // Pin direzione 2
 bool ventolaAccesa = false;
 
-#define PHOTO_PIN A0  // Pin fotocellula
-
-#define STEPS_PER_REV 2048   // Passi per un giro completo del motore
+#define PHOTO_PIN A0          // Pin fotocellula
+#define STEPS_PER_REV 2048    // Passi per un giro completo del motore
+#define STEP 128              // Step per ogni movimento della tenda
+#define MAX_POS 1024          // Massima posizione della tenda
+#define MIN_POS 0             // Minima posizione della tenda
+int posizioneTenda = 0;       // Posizione attuale della tenda
 
 Stepper motore(STEPS_PER_REV, 11, 9, 10, 8); // Inizializza motore con ULN2003
 DHT dht(DHTPIN, DHTTYPE);  // Inizializza DHT
@@ -27,7 +30,6 @@ bool modalitaAutomatica = true;
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("Inizializzazione DHT11");
   dht.begin();  // Avvia DHT
 
   // Configurazione pin della ventola
@@ -81,13 +83,23 @@ void loop() {
             break;
 
           case IR_VOL_PLUS:
-            Serial.println("Motore: Rotazione ORARIA");
-            motore.step(512);
+            if (posizioneTenda > MIN_POS) {
+              posizioneTenda -= STEP;
+              Serial.println("Motore: Rotazione ANTIORARIA");
+              motore.step(-STEP);
+            } else {
+              Serial.println("Tenda già completamente alzata");
+            }
             break;
 
           case IR_VOL_MINUS:
-            Serial.println("Motore: Rotazione ANTIORARIA");
-            motore.step(-512);
+            if (posizioneTenda < MAX_POS) {
+              posizioneTenda += STEP;
+              Serial.println("Motore: Rotazione ORARIA");
+              motore.step(STEP);
+            } else {
+              Serial.println("Tenda già completamente abbassata");
+            }
             break;
 
           default:
@@ -96,7 +108,6 @@ void loop() {
         }
       }
 
-      delay(1000);
       IrReceiver.resume();
     }
 
@@ -122,6 +133,23 @@ void loop() {
       Serial.print("Luce: ");
       Serial.println(light);
 
+      // Controllo luce per tenda
+      while(light > 400 && posizioneTenda < MAX_POS) {
+        posizioneTenda += STEP;
+        Serial.println("Luce alta: abbassamento tenda");
+        motore.step(-STEP);
+        delay(500);
+        light = analogRead(PHOTO_PIN);
+      }
+
+      while (light < 300 && posizioneTenda > MIN_POS) {
+        posizioneTenda -= STEP;
+        Serial.println("Luce bassa: alzamento tenda");
+        motore.step(STEP);
+        delay(500);
+        light = analogRead(PHOTO_PIN);
+      }
+
       // Controllo ventola
       if (!ventolaAccesa && (temperature > 24 || humidity > 50)) {
         digitalWrite(FAN_DIR1, HIGH);
@@ -135,17 +163,6 @@ void loop() {
         analogWrite(FAN_PWM, 0);
         Serial.println("Ventola SPENTA");
         ventolaAccesa = false;
-      }
-
-      // Controllo motore per tenda
-      if (light < 500) {
-        Serial.println("Luce bassa: motore in senso antiorario");
-        motore.step(-512);
-        delay(1000);
-      } else if (light > 900) {
-        Serial.println("Luce alta: motore in senso orario");
-        motore.step(512);
-        delay(1000);
       }
     } 
 }
